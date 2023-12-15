@@ -24,18 +24,6 @@ export const MainListItems = () => {
         </ListItemIcon>
         <ListItemText primary="Dashboard" sx={{ color: 'black' }} />
       </ListItemButton>
-      <ListItemButton onClick={() => handleCLick('deposits')}>
-        <ListItemIcon>
-          <AssignmentIcon />
-        </ListItemIcon>
-        <ListItemText primary="Loans" sx={{ color: 'black' }} />
-      </ListItemButton>
-      <ListItemButton onClick={() => handleCLick('withdrawals')}>
-        <ListItemIcon>
-          <LayersIcon />
-        </ListItemIcon>
-        <ListItemText primary="Withdrawals" sx={{ color: 'black' }} />
-      </ListItemButton>
       <ListItemButton onClick={() => handleCLick('settings')}>
         <ListItemIcon>
           <PeopleIcon />
