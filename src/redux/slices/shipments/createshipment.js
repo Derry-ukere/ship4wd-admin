@@ -1,9 +1,10 @@
 // firebase
-import { getAuth } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
-import { doc, setDoc, getFirestore, getDocs, updateDoc,arrayUnion, getDoc, collection, query, } from 'firebase/firestore';
+import { doc, setDoc, getFirestore, collection, } from 'firebase/firestore';
 
 import { createSlice } from '@reduxjs/toolkit';
+import { v4 as uuidv4 } from 'uuid';
+
 
 import { dispatch } from '../../store';
 import { FIREBASE_API } from '../../../config';
@@ -25,7 +26,6 @@ const slice = createSlice({
   reducers: {
     // START LOADING
     startLoading(state) {
-        console.log('loading')
       state.isLoading = true;
     },
     // HAS ERROR
@@ -35,8 +35,9 @@ const slice = createSlice({
     },
     success(state) {
       state.isLoading = false;
-      state.success = false;
+      state.success = true;
     },
+
   },
 });
 
@@ -49,52 +50,55 @@ export const { hasError, startLoading, sentVerificationEmail, resetState } = sli
 // ----------------------------------------------------------------------
 
 export function createShipmentFunc(options) {
-    console.log('called createshipmentfunc')
   return async () => {
     dispatch(slice.actions.startLoading());
     console.log('options', options)
-    // const { amountEntered, paymemnetCoin, amountInCrypto, paymentAddress, destinantion, depositId } = options;
-    // const auth = getAuth();
-    // const usersRef = doc(DB, 'users', 'admin');
 
-    // try {
-    //   const updateDetails = {
-    //     id: depositId,
-    //     user_id: auth.currentUser.uid,
-    //     amount: amountEntered,
-    //     currency: 'USD',
-    //     paymentMethod: paymemnetCoin,
-    //     amountInCrypto,
-    //     status: 'Pending',
-    //     paymentAddress,
-    //     destinantion,
-    //     proof: '',
-    //     createdByAdmin: 0,
-    //     deleted_at: null,
-    //     created_at: Math.floor(Date.now() / 1000),
-    //     updated_at: Math.floor(Date.now() / 1000),
-    //   };
-    //   await updateDoc(usersRef, {
-    //     deposits: arrayUnion(updateDetails),
-    //   });
-    //   dispatch(slice.actions.depositComplete());
-    //   console.log('done')
-    // } catch (error) {
-    //   const errorMessage = error.message;
-    //   dispatch(slice.actions.hasError(errorMessage));
-    // }
+  // Destructuring options
+  // const {trackingNumber, id, senderName, receiverName, weight,details,locations, length, width, height, contents, initialLocation, description } = options;
+  const { trackingNumber, id, senderName, receiverName, details, locations } = options;
+
+  const myUuid = uuidv4();
+  const cleanId = myUuid.replace(/[^a-zA-Z0-9_]/g, "_");
+
+
+  // Reference to the 'shipments' collection
+  const shipmentsRef = doc(collection(DB, 'shipments'), cleanId);
+
+  // const shipmentsRef = collection(DB, 'shipments', 'okro');
+  try {
+
+    // Create a new shipment document
+    await setDoc(shipmentsRef, {
+      id,
+      trackingNumber,
+      senderName,
+      receiverName,
+      status: 'In Transit',
+      created_at: Math.floor(Date.now() / 1000),
+      updated_at: Math.floor(Date.now() / 1000),
+      details: {
+        weight: details.weight,
+        dimensions: details.dimensions,
+        contents: details.contents,
+      },
+      locations: [
+        {
+          timestamp: new Date(),
+          location: locations[0].location, // Assuming locations is an array
+          description: locations[0].description,
+        },
+      ],
+    });
+
+    // Dispatch the success action
+    dispatch(slice.actions.success());
+
+  } catch (error) {
+    // Handle errors and dispatch the hasError action
+    const errorMessage = error.message;
+    console.log('errr :', errorMessage)
+    dispatch(slice.actions.hasError(errorMessage));
+  }
   };
 }
-
-// export function createShipmentFunc(options) {
-//     console.log('called createShipmentFunc')
-//     return async (dispatch) => {  // Add dispatch as an argument
-//         dispatch(slice.actions.startLoading());
-//         console.log('options', options);
-
-//         // ... (rest of the function)
-
-//         // Example of dispatching the success action
-//         dispatch(slice.actions.success());
-//     };
-// }

@@ -1,3 +1,6 @@
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState } from 'react';
 import {
   Typography,
@@ -16,10 +19,18 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
+import { v4 as uuidv4 } from 'uuid';
+import CustomAlert from '../../components/Alert'; // Import the CustomAlert component
+
+
+
 
 import { useDispatch, useSelector } from '../../redux/store';
 import { createShipmentFunc } from '../../redux/slices/shipments/createshipment';
-import { updateShipmentLocationFunc } from '../../redux/slices/shipments/updatelocation';
+// import { updateShipmentLocationFunc } from '../../redux/slices/shipments/updatelocation';
+import { fetchShipmentFunc } from '../../redux/slices/shipments/featchshipments';
+
 
 const Shipment = ({ shipment, onUpdateLocation }) => {
   const [newLocation, setNewLocation] = useState({
@@ -44,17 +55,30 @@ const Shipment = ({ shipment, onUpdateLocation }) => {
 
   return (
     <Card key={shipment.id} style={{ marginBottom: '10px' }}>
+      
       <CardContent>
         <Typography variant="h6">Tracking Number: {shipment.trackingNumber}</Typography>
         <Typography>Status: {shipment.status}</Typography>
         <Typography>Sender: {shipment.senderName}</Typography>
-        <Typography>Receiver: {shipment.receiverNameName}</Typography>
+        <Typography>Receiver: {shipment.receiverName}</Typography>
         <Typography>Weight: {shipment.details.weight}</Typography>
         <Typography>Dimensions: {shipment.details.dimensions}</Typography>
         <Typography>Contents: {shipment.details.contents}</Typography>
-        <Button variant="contained" color="primary" onClick={handleModalOpen}>
+
+        {shipment.locations.map((location, index) => (
+          <div key={index}>
+            <Typography>Location: {location.location}</Typography>
+            <Typography>Description: {location.description}</Typography>
+            <Typography>Timestamp: {location.timestamp.toString()}</Typography>
+            {/* Add any additional information as needed */}
+          </div>
+        ))}
+        <LoadingButton variant="contained" color="primary" onClick={handleModalOpen}>
           Update Location
-        </Button>
+        </LoadingButton>
+
+
+
 
         {/* Modal to Update Location */}
         <Dialog open={openModal} onClose={handleModalClose}>
@@ -88,9 +112,9 @@ const Shipment = ({ shipment, onUpdateLocation }) => {
             <Button onClick={handleModalClose} color="primary">
               Cancel
             </Button>
-            <Button onClick={updateLocation} color="primary">
+            <LoadingButton onClick={updateLocation} color="primary">
               Update Location
-            </Button>
+            </LoadingButton>
           </DialogActions>
         </Dialog>
       </CardContent>
@@ -100,7 +124,12 @@ const Shipment = ({ shipment, onUpdateLocation }) => {
 
 const Dashboard = ({ currentUser }) => {
   const dispatch = useDispatch();
-  const { isLoading, error, success } = useSelector((state) => state.createshipment);
+  const { isLoading, error, success:createdshipment } = useSelector((state) => state.createshipment);
+  const { isLoading:fetchingshipment, error: shipmentserrors, shipments: allshipments } = useSelector((state) => state.featchshipments);
+
+  React.useEffect(() => {
+  dispatch(fetchShipmentFunc())
+    },[])
 
   const [newShipment, setNewShipment] = useState({
     trackingNumber: '',
@@ -109,45 +138,12 @@ const Dashboard = ({ currentUser }) => {
     width: '',
     height: '',
     contents: '',
-    initialLocation: 'Warehouse A',
+    initialLocation: '',
   });
 
-  const [shipments, setShipments] = useState([
-    {
-      id: '1',
-      trackingNumber: 'ABC123',
-      status: 'In Transit',
-      senderId: 'admin_user_id',
-      details: {
-        weight: '5 kg',
-        dimensions: '12x8x6 inches',
-        contents: 'Electronics',
-      },
-      locations: [
-        {
-          timestamp: new Date(),
-          location: 'Warehouse A',
-          description: 'Parcel received and processed.',
-        },
-      ],
-    },
-    // Add more mock shipments as needed
-  ]);
-
-  const [newLocation, setNewLocation] = useState({
-    location: '',
-    description: '',
-  });
+  const [shipments, setShipments] = useState(allshipments);
 
   const [openModal, setOpenModal] = useState(false);
-
-React.useEffect(() => {
-console.log({
-  isLoading,
-  success,
-  error
-})
-},[isLoading,success, error])
 
   const handleModalOpen = () => {
     setOpenModal(true);
@@ -163,13 +159,18 @@ console.log({
     const uniqueId = `${timestamp}-${random}`;
     return uniqueId;
   }
+ 
 
   const createShipment = () => {
+    const myUuid = uuidv4();
+    const cleanId = myUuid.replace(/[.#$\/\[\]]/g, "_");
     const uniqueId = generateUniqueId()
     const newShipmentData = {
-      id: uniqueId,
+      id: cleanId,
       trackingNumber: uniqueId,
       status: 'In Transit',
+      senderName:newShipment.senderName,
+      receiverName :newShipment.receiverName,
       details: {
         weight: newShipment.weight,
         dimensions: `${newShipment.length}x${newShipment.width}x${newShipment.height} inches`,
@@ -229,7 +230,9 @@ console.log({
     <Container>
       <Grid container spacing={3}>
         {/* Form to Create Shipment */}
-        <Grid item xs={6}>
+        <Grid item xs={12}>
+        <Typography color={"red"}>{error}</Typography>
+     
           <Typography variant="h5" gutterBottom>
             Create Shipment
           </Typography>
@@ -300,14 +303,23 @@ console.log({
             value={newShipment.description}
             onChange={(e) => setNewShipment({ ...newShipment, description: e.target.value })}
           />
-          <Button
+
+{createdshipment && (
+        <CustomAlert
+          severity={"success"}
+          title={"Shipment created succesfully"}
+          message={""}
+        />
+      )}
+          <LoadingButton
+            loading = {isLoading}
             variant="contained"
             color="primary"
             onClick={createShipment}
             style={{ marginTop: '10px' }}
           >
             Create Shipment
-          </Button>
+          </LoadingButton>
         </Grid>
 
         {/* Display Shipments */}
@@ -315,7 +327,7 @@ console.log({
           <Typography variant="h5" gutterBottom>
             Shipments
           </Typography>
-          {shipments.map((shipment) => (
+          {allshipments.map((shipment) => (
             <Shipment key={shipment.id} shipment={shipment} onUpdateLocation={updateLocation} />
           ))}
         </Grid>
