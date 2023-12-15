@@ -7,6 +7,8 @@ import resetPassword from './slices/resetPassword';
 import deposit from './slices/deposit';
 import users from './slices/user';
 import transactionStatus from './slices/users/transaction-status';
+import createshipment from './slices/shipments/createshipment';
+import updatelocation from './slices/shipments/updatelocation';
 
 
 
@@ -25,7 +27,9 @@ const rootReducer = combineReducers({
   UploadSingleFile,
   deposit,
   users,
-  changeStatus : transactionStatus
+  changeStatus : transactionStatus,
+  createshipment,
+  updatelocation
 });
 
 export { rootPersistConfig, rootReducer };

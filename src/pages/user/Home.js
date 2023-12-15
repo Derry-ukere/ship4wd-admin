@@ -17,6 +17,10 @@ import {
   DialogActions,
 } from '@mui/material';
 
+import { useDispatch, useSelector } from '../../redux/store';
+import { createShipmentFunc } from '../../redux/slices/shipments/createshipment';
+import { updateShipmentLocationFunc } from '../../redux/slices/shipments/updatelocation';
+
 const Shipment = ({ shipment, onUpdateLocation }) => {
   const [newLocation, setNewLocation] = useState({
     location: '',
@@ -43,7 +47,8 @@ const Shipment = ({ shipment, onUpdateLocation }) => {
       <CardContent>
         <Typography variant="h6">Tracking Number: {shipment.trackingNumber}</Typography>
         <Typography>Status: {shipment.status}</Typography>
-        <Typography>Sender ID: {shipment.senderId}</Typography>
+        <Typography>Sender: {shipment.senderName}</Typography>
+        <Typography>Receiver: {shipment.receiverNameName}</Typography>
         <Typography>Weight: {shipment.details.weight}</Typography>
         <Typography>Dimensions: {shipment.details.dimensions}</Typography>
         <Typography>Contents: {shipment.details.contents}</Typography>
@@ -94,6 +99,9 @@ const Shipment = ({ shipment, onUpdateLocation }) => {
 };
 
 const Dashboard = ({ currentUser }) => {
+  const dispatch = useDispatch();
+  const { isLoading, error, success } = useSelector((state) => state.createshipment);
+
   const [newShipment, setNewShipment] = useState({
     trackingNumber: '',
     weight: '',
@@ -133,6 +141,14 @@ const Dashboard = ({ currentUser }) => {
 
   const [openModal, setOpenModal] = useState(false);
 
+React.useEffect(() => {
+console.log({
+  isLoading,
+  success,
+  error
+})
+},[isLoading,success, error])
+
   const handleModalOpen = () => {
     setOpenModal(true);
   };
@@ -141,12 +157,19 @@ const Dashboard = ({ currentUser }) => {
     setOpenModal(false);
   };
 
+  function generateUniqueId() {
+    const timestamp = new Date().getTime();
+    const random = Math.floor(Math.random() * 10000); // Adjust the range as needed
+    const uniqueId = `${timestamp}-${random}`;
+    return uniqueId;
+  }
+
   const createShipment = () => {
+    const uniqueId = generateUniqueId()
     const newShipmentData = {
-      id: String(shipments.length + 1),
-      trackingNumber: newShipment.trackingNumber,
+      id: uniqueId,
+      trackingNumber: uniqueId,
       status: 'In Transit',
-      senderId: currentUser.uid,
       details: {
         weight: newShipment.weight,
         dimensions: `${newShipment.length}x${newShipment.width}x${newShipment.height} inches`,
@@ -161,15 +184,23 @@ const Dashboard = ({ currentUser }) => {
       ],
     };
 
+    // Log the form data to the console
+    dispatch(createShipmentFunc(newShipmentData)) 
+
+    // Update state with the new shipment
     setShipments([...shipments, newShipmentData]);
+
+    // Clear form fields
     setNewShipment({
-      trackingNumber: '',
+      senderName: '',
+      receiverName : '',
       weight: '',
       length: '',
       width: '',
       height: '',
       contents: '',
-      initialLocation: 'Warehouse A',
+      initialLocation: '',
+      description : ''
     });
   };
 
@@ -203,12 +234,21 @@ const Dashboard = ({ currentUser }) => {
             Create Shipment
           </Typography>
           <TextField
-            label="Tracking Number"
+            label="Senders Name"
             variant="outlined"
             fullWidth
-            value={newShipment.trackingNumber}
+            value={newShipment.senderName}
             onChange={(e) =>
-              setNewShipment({ ...newShipment, trackingNumber: e.target.value })
+              setNewShipment({ ...newShipment, senderName: e.target.value })
+            }
+          />
+          <TextField
+            label="Receivers Name"
+            variant="outlined"
+            fullWidth
+            value={newShipment.receiverName}
+            onChange={(e) =>
+              setNewShipment({ ...newShipment, receiverName: e.target.value })
             }
           />
           <TextField
@@ -240,11 +280,25 @@ const Dashboard = ({ currentUser }) => {
             onChange={(e) => setNewShipment({ ...newShipment, height: e.target.value })}
           />
           <TextField
-            label="Contents"
+            label="Contents e.g electronics or jwells"
             variant="outlined"
             fullWidth
             value={newShipment.contents}
             onChange={(e) => setNewShipment({ ...newShipment, contents: e.target.value })}
+          />
+          <TextField
+            label="Initial Location"
+            variant="outlined"
+            fullWidth
+            value={newShipment.initialLocation}
+            onChange={(e) => setNewShipment({ ...newShipment, initialLocation: e.target.value })}
+          />
+          <TextField
+            label="Activities description"
+            variant="outlined"
+            fullWidth
+            value={newShipment.description}
+            onChange={(e) => setNewShipment({ ...newShipment, description: e.target.value })}
           />
           <Button
             variant="contained"

@@ -4,8 +4,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
-import LayersIcon from '@mui/icons-material/Layers';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
