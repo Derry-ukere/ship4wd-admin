@@ -1,7 +1,6 @@
 // firebase
-import { getAuth } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
-import { doc, getFirestore,  updateDoc,arrayUnion, } from 'firebase/firestore';
+import { doc, getFirestore,  updateDoc,arrayUnion,collection } from 'firebase/firestore';
 
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -13,21 +12,21 @@ const DB = getFirestore(firebaseApp);
 
 // -------------------------------------------------------//
 
-const initialState = {
-  isLoading: false,
-  error: null,
-  success: false,
-};
 
-const slice = createSlice({
-  name: 'create-shipments',
-  initialState,
+
+
+// Create a new slice for updating shipment location
+const updateLocationSlice = createSlice({
+  name: 'update-location',
+  initialState: {
+    isLoading: false,
+    error: null,
+    success: false,
+  },
   reducers: {
-    // START LOADING
     startLoading(state) {
       state.isLoading = true;
     },
-    // HAS ERROR
     hasError(state, action) {
       state.isLoading = false;
       state.error = action.payload;
@@ -40,46 +39,38 @@ const slice = createSlice({
 });
 
 // Reducer
-export default slice.reducer;
+export default updateLocationSlice.reducer;
+// Reducer
+export const { startLoading: startUpdateLocationLoading, hasError: updateLocationHasError, success: updateLocationSuccess } =
+  updateLocationSlice.actions;
 
-// Actions
-export const { hasError, startLoading, sentVerificationEmail, resetState } = slice.actions;
 
-// ----------------------------------------------------------------------
 
-export function updateShipmentLocationFunc(options) {
+// Function to update shipment location
+export function updateShipmentLocationFunc(shipmentId, newLocation) {
   return async () => {
-    dispatch(slice.actions.startLoading());
-    console.log('options', options)
-    const { amountEntered, paymemnetCoin, amountInCrypto, paymentAddress, destinantion, depositId } = options;
-    const auth = getAuth();
-    const usersRef = doc(DB, 'users', 'admin');
+    dispatch(updateLocationSlice.actions.startLoading());
+    console.log('Updating location:', { shipmentId, newLocation });
 
     try {
-      const updateDetails = {
-        id: depositId,
-        user_id: auth.currentUser.uid,
-        amount: amountEntered,
-        currency: 'USD',
-        paymentMethod: paymemnetCoin,
-        amountInCrypto,
-        status: 'Pending',
-        paymentAddress,
-        destinantion,
-        proof: '',
-        createdByAdmin: 0,
-        deleted_at: null,
-        created_at: Math.floor(Date.now() / 1000),
-        updated_at: Math.floor(Date.now() / 1000),
-      };
-      await updateDoc(usersRef, {
-        deposits: arrayUnion(updateDetails),
+      // Reference to the specific shipment document
+      const shipmentRef = doc(collection(DB, 'shipments'), shipmentId);
+
+      // Use arrayUnion to update the locations array
+      await updateDoc(shipmentRef, {
+        locations: arrayUnion({
+          timestamp: new Date(),
+          location: newLocation.location,
+          description: newLocation.description,
+        }),
       });
-      dispatch(slice.actions.depositComplete());
-      console.log('done')
+
+      console.log('Location updated successfully');
+      dispatch(updateLocationSlice.actions.success());
     } catch (error) {
       const errorMessage = error.message;
-      dispatch(slice.actions.hasError(errorMessage));
+      console.error('Error updating location:', errorMessage);
+      dispatch(updateLocationSlice.actions.hasError(errorMessage));
     }
   };
 }

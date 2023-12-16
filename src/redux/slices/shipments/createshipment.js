@@ -56,7 +56,7 @@ export function createShipmentFunc(options) {
 
   // Destructuring options
   // const {trackingNumber, id, senderName, receiverName, weight,details,locations, length, width, height, contents, initialLocation, description } = options;
-  const { trackingNumber, id, senderName, receiverName, details, locations } = options;
+  const { trackingNumber,senderName, receiverName, details, locations } = options;
 
   const myUuid = uuidv4();
   const cleanId = myUuid.replace(/[^a-zA-Z0-9_]/g, "_");
@@ -70,7 +70,7 @@ export function createShipmentFunc(options) {
 
     // Create a new shipment document
     await setDoc(shipmentsRef, {
-      id,
+      id: cleanId,
       trackingNumber,
       senderName,
       receiverName,
@@ -103,3 +103,5 @@ export function createShipmentFunc(options) {
   }
   };
 }
+
+
