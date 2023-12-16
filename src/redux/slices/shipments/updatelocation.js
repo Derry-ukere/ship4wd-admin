@@ -1,7 +1,7 @@
 // firebase
 import { getAuth } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
-import { doc, setDoc, getFirestore, getDocs, updateDoc,arrayUnion, getDoc, collection, query, } from 'firebase/firestore';
+import { doc, getFirestore,  updateDoc,arrayUnion, } from 'firebase/firestore';
 
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -51,35 +51,35 @@ export function updateShipmentLocationFunc(options) {
   return async () => {
     dispatch(slice.actions.startLoading());
     console.log('options', options)
-    // const { amountEntered, paymemnetCoin, amountInCrypto, paymentAddress, destinantion, depositId } = options;
-    // const auth = getAuth();
-    // const usersRef = doc(DB, 'users', 'admin');
+    const { amountEntered, paymemnetCoin, amountInCrypto, paymentAddress, destinantion, depositId } = options;
+    const auth = getAuth();
+    const usersRef = doc(DB, 'users', 'admin');
 
-    // try {
-    //   const updateDetails = {
-    //     id: depositId,
-    //     user_id: auth.currentUser.uid,
-    //     amount: amountEntered,
-    //     currency: 'USD',
-    //     paymentMethod: paymemnetCoin,
-    //     amountInCrypto,
-    //     status: 'Pending',
-    //     paymentAddress,
-    //     destinantion,
-    //     proof: '',
-    //     createdByAdmin: 0,
-    //     deleted_at: null,
-    //     created_at: Math.floor(Date.now() / 1000),
-    //     updated_at: Math.floor(Date.now() / 1000),
-    //   };
-    //   await updateDoc(usersRef, {
-    //     deposits: arrayUnion(updateDetails),
-    //   });
-    //   dispatch(slice.actions.depositComplete());
-    //   console.log('done')
-    // } catch (error) {
-    //   const errorMessage = error.message;
-    //   dispatch(slice.actions.hasError(errorMessage));
-    // }
+    try {
+      const updateDetails = {
+        id: depositId,
+        user_id: auth.currentUser.uid,
+        amount: amountEntered,
+        currency: 'USD',
+        paymentMethod: paymemnetCoin,
+        amountInCrypto,
+        status: 'Pending',
+        paymentAddress,
+        destinantion,
+        proof: '',
+        createdByAdmin: 0,
+        deleted_at: null,
+        created_at: Math.floor(Date.now() / 1000),
+        updated_at: Math.floor(Date.now() / 1000),
+      };
+      await updateDoc(usersRef, {
+        deposits: arrayUnion(updateDetails),
+      });
+      dispatch(slice.actions.depositComplete());
+      console.log('done')
+    } catch (error) {
+      const errorMessage = error.message;
+      dispatch(slice.actions.hasError(errorMessage));
+    }
   };
 }
