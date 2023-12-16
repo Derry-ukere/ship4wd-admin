@@ -31,7 +31,7 @@ import CreateShipmentForm from '../../components/CreateShipmentForm';
 
 import { useDispatch, useSelector } from '../../redux/store';
 import { createShipmentFunc } from '../../redux/slices/shipments/createshipment';
-// import { updateShipmentLocationFunc } from '../../redux/slices/shipments/updatelocation';
+import { updateShipmentLocationFunc } from '../../redux/slices/shipments/updatelocation';
 import { fetchShipmentFunc } from '../../redux/slices/shipments/featchshipments';
 
 
@@ -68,24 +68,9 @@ const Dashboard = ({ currentUser }) => {
   };
  
 
-  React.useEffect(() => {
-    console.log({
-      fetchingshipment,
-      shipmentserrors,
-      allshipments
-    })
-  }, [dispatch]);
-
-  React.useEffect(() => {
-    console.log({
-      isLoading,
-      error,
-      createdshipment
-    })
-  }, [dispatch]);
-
-  const updateLocation = (shipmentId, newLocation) => {
-   console.log('update')
+  const updateLocation = (shipmentId, newLocation,description) => {
+   dispatch(updateShipmentLocationFunc(shipmentId,newLocation))
+   
   };
 
   return (

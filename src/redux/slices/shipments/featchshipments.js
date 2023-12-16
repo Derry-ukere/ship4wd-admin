@@ -20,7 +20,7 @@ const initialState = {
 };
 
 const slice = createSlice({
-  name: 'create-shipments',
+  name: 'fetch-shipments',
   initialState,
   reducers: {
     // START LOADING

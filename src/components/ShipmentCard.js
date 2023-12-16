@@ -26,33 +26,44 @@ import CustomAlert from './Alert'; // Import the CustomAlert component
 
 
 
-import { useDispatch, useSelector } from '../redux/store';
+import { dispatch, useDispatch, useSelector } from '../redux/store';
 import { createShipmentFunc } from '../redux/slices/shipments/createshipment';
-// import { updateShipmentLocationFunc } from '../../redux/slices/shipments/updatelocation';
+// import {  updateShipmentLocationFunc} from '../../redux/slices/shipments/updatelocation';
 import { fetchShipmentFunc } from '../redux/slices/shipments/featchshipments';
 
 
 const Shipment = ({ shipment, onUpdateLocation }) => {
+  const { isLoading, error, success } = useSelector((state) => state.updatelocation);
+
   const [newLocation, setNewLocation] = useState({
     location: '',
     description: '',
   });
 
   const [openModal, setOpenModal] = useState(false);
+  const [parcelId, setparcelId] = useState('')
 
-  const handleModalOpen = () => {
+  const handleModalOpen = (id) => {
     setOpenModal(true);
+    setparcelId(id)
   };
 
   const handleModalClose = () => {
     setOpenModal(false);
   };
 
-  const updateLocation = () => {
+  const updateLocation = (e) => {
+    e.preventDefault()
     onUpdateLocation(shipment.id, newLocation);
-    handleModalClose();
+    
   };
 
+  React.useEffect(()=>{
+if(success){
+  handleModalClose();
+  dispatch(fetchShipmentFunc())
+}
+  },[success])
   return (
     <Card key={shipment.id} style={{ marginBottom: '10px' }}>
       
@@ -64,58 +75,56 @@ const Shipment = ({ shipment, onUpdateLocation }) => {
         <Typography>Weight: {shipment.details.weight}</Typography>
         <Typography>Dimensions: {shipment.details.dimensions}</Typography>
         <Typography>Contents: {shipment.details.contents}</Typography>
+        <br/>
 
+        <Typography variant='h6'>Locations:</Typography>
         {shipment.locations.map((location, index) => (
           <div key={index}>
             <Typography>Location: {location.location}</Typography>
             <Typography>Description: {location.description}</Typography>
             <Typography>Timestamp: {location.timestamp.toString()}</Typography>
-            {/* Add any additional information as needed */}
+            ********
           </div>
         ))}
         <LoadingButton variant="contained" color="primary" onClick={handleModalOpen}>
           Update Location
         </LoadingButton>
 
-
-
-
-        {/* Modal to Update Location */}
-        <Dialog open={openModal} onClose={handleModalClose}>
+         {/* Modal to Update Location */}
+         <Dialog open={openModal} onClose={handleModalClose}>
+         <form>
           <DialogTitle>Update Location</DialogTitle>
           <DialogContent>
-            <FormControl fullWidth>
-              <InputLabel>Location</InputLabel>
-              <Select
+            
+              <TextField
+                label="Enter Current Location"
+                variant="outlined"
+                fullWidth
                 value={newLocation.location}
-                onChange={(e) =>
-                  setNewLocation({ ...newLocation, location: e.target.value })
-                }
-              >
-                <MenuItem value="Warehouse A">Warehouse A</MenuItem>
-                <MenuItem value="Warehouse B">Warehouse B</MenuItem>
-                {/* Add more locations as needed */}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Description"
-              variant="outlined"
-              fullWidth
-              value={newLocation.description}
-              onChange={(e) =>
-                setNewLocation({ ...newLocation, description: e.target.value })
-              }
-              style={{ marginTop: '10px' }}
-            />
+                onChange={(e) => setNewLocation({ ...newLocation, location: e.target.value })}
+                required
+                style={{ marginTop: '10px' }}
+              />
+              <TextField
+                label="Description"
+                variant="outlined"
+                fullWidth
+                value={newLocation.description}
+                onChange={(e) => setNewLocation({ ...newLocation, description: e.target.value })}
+                required
+                style={{ marginTop: '10px' }}
+              />
+           
           </DialogContent>
           <DialogActions>
             <Button onClick={handleModalClose} color="primary">
               Cancel
             </Button>
-            <LoadingButton onClick={updateLocation} color="primary">
+            <LoadingButton onClick={updateLocation} color="primary" type='submit' loading = {isLoading}>
               Update Location
             </LoadingButton>
           </DialogActions>
+          </form>
         </Dialog>
       </CardContent>
     </Card>
