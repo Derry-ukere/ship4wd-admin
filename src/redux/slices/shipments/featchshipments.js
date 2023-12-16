@@ -52,6 +52,7 @@ export function fetchShipmentFunc(options) {
     dispatch(slice.actions.startLoading());
 
   try {
+    console.log('fetching')
     const shipmentsRef = collection(DB, 'shipments');
     const querySnapshot = await getDocs(shipmentsRef);
 
@@ -60,7 +61,6 @@ export function fetchShipmentFunc(options) {
       shipments.push({ id: doc.id, ...doc.data() });
     });
 
-    console.log('Shipments:', shipments);
         // Dispatch the success action
     dispatch(slice.actions.success(shipments));
   } catch (error) {

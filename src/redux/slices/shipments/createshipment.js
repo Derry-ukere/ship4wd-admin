@@ -91,6 +91,7 @@ export function createShipmentFunc(options) {
       ],
     });
 
+    console.log('created shipment')
     // Dispatch the success action
     dispatch(slice.actions.success());
 
