@@ -58,6 +58,7 @@ export function updateShipmentLocationFunc(shipmentId, newLocation) {
 
       // Use arrayUnion to update the locations array
       await updateDoc(shipmentRef, {
+        status : newLocation.status,
         locations: arrayUnion({
           timestamp: new Date(),
           location: newLocation.location,

@@ -47,7 +47,7 @@ export const { hasError, startLoading, sentVerificationEmail, resetState } = sli
 
 // ----------------------------------------------------------------------
 
-export function fetchShipmentFunc(options) {
+export function fetchShipmentFunc() {
   return async () => {
     dispatch(slice.actions.startLoading());
 
@@ -65,7 +65,7 @@ export function fetchShipmentFunc(options) {
     dispatch(slice.actions.success(shipments));
   } catch (error) {
     console.error('Error getting shipments:', error);
-    throw error;
+    dispatch(slice.actions.error(error.message));
   }
  }
 }
