@@ -1,10 +1,9 @@
 // firebase
 import { initializeApp } from 'firebase/app';
-import { doc, setDoc, getFirestore, collection, } from 'firebase/firestore';
+import { doc, setDoc, getFirestore, collection } from 'firebase/firestore';
 
 import { createSlice } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
-
 
 import { dispatch } from '../../store';
 import { FIREBASE_API } from '../../../config';
@@ -24,11 +23,9 @@ const slice = createSlice({
   name: 'create-shipments',
   initialState,
   reducers: {
-    // START LOADING
     startLoading(state) {
       state.isLoading = true;
     },
-    // HAS ERROR
     hasError(state, action) {
       state.isLoading = false;
       state.error = action.payload;
@@ -37,7 +34,6 @@ const slice = createSlice({
       state.isLoading = false;
       state.success = true;
     },
-
   },
 });
 
@@ -45,63 +41,51 @@ const slice = createSlice({
 export default slice.reducer;
 
 // Actions
-export const { hasError, startLoading, sentVerificationEmail, resetState } = slice.actions;
+export const { hasError, startLoading } = slice.actions;
 
 // ----------------------------------------------------------------------
 
 export function createShipmentFunc(options) {
   return async () => {
     dispatch(slice.actions.startLoading());
-    console.log('options', options)
 
-  // Destructuring options
-  // const {trackingNumber, id, senderName, receiverName, weight,details,locations, length, width, height, contents, initialLocation, description } = options;
-  const { trackingNumber,senderName, receiverName, details, locations } = options;
+    const myUuid = uuidv4();
+    const cleanId = myUuid.replace(/[^a-zA-Z0-9_]/g, '_');
 
-  const myUuid = uuidv4();
-  const cleanId = myUuid.replace(/[^a-zA-Z0-9_]/g, "_");
+    const shipmentsRef = doc(collection(DB, 'shipments'), cleanId);
 
+    try {
+      await setDoc(shipmentsRef, {
+        id: cleanId,
+        trackingNumber: options.trackingNumber,
+        status: options.status || 'Pending Pickup',
+        shipmentType: options.shipmentType || 'parcel',
+        serviceLevel: options.serviceLevel || 'standard',
+        // Sender
+        senderName: options.senderName || options.sender?.name || '',
+        sender: options.sender || null,
+        // Receiver
+        receiverName: options.receiverName || options.receiver?.name || '',
+        receiver: options.receiver || null,
+        // Package details
+        details: options.details || {},
+        // Service options
+        options: options.options || {},
+        // Scheduling
+        estimatedPickupDate: options.estimatedPickupDate || null,
+        specialInstructions: options.specialInstructions || '',
+        // Locations
+        locations: options.locations || [],
+        // Timestamps
+        created_at: Math.floor(Date.now() / 1000),
+        updated_at: Math.floor(Date.now() / 1000),
+      });
 
-  // Reference to the 'shipments' collection
-  const shipmentsRef = doc(collection(DB, 'shipments'), cleanId);
-
-  // const shipmentsRef = collection(DB, 'shipments', 'okro');
-  try {
-
-    // Create a new shipment document
-    await setDoc(shipmentsRef, {
-      id: cleanId,
-      trackingNumber,
-      senderName,
-      receiverName,
-      status: 'In Transit',
-      created_at: Math.floor(Date.now() / 1000),
-      updated_at: Math.floor(Date.now() / 1000),
-      details: {
-        weight: details.weight,
-        dimensions: details.dimensions,
-        contents: details.contents,
-      },
-      locations: [
-        {
-          timestamp: new Date(),
-          location: locations[0].location, // Assuming locations is an array
-          description: locations[0].description,
-        },
-      ],
-    });
-
-    console.log('created shipment')
-    // Dispatch the success action
-    dispatch(slice.actions.success());
-
-  } catch (error) {
-    // Handle errors and dispatch the hasError action
-    const errorMessage = error.message;
-    console.log('errr :', errorMessage)
-    dispatch(slice.actions.hasError(errorMessage));
-  }
+      dispatch(slice.actions.success());
+    } catch (error) {
+      const errorMessage = error.message;
+      console.error('Error creating shipment:', errorMessage);
+      dispatch(slice.actions.hasError(errorMessage));
+    }
   };
 }
-
-

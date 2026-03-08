@@ -1,92 +1,54 @@
-/* eslint-disable no-useless-escape */
-/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Typography,
   Container,
   Grid,
-  Card,
-  CardContent,
-  TextField,
-  Button, 
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Box,
+  Chip,
 } from '@mui/material';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { v4 as uuidv4 } from 'uuid';
-import CustomAlert from '../../components/Alert';
-import ShipmentCard from '../../components/ShipmentCard'; 
-import CreateShipmentForm from '../../components/CreateShipmentForm'; 
-
-
-
-
+import ShipmentCard from '../../components/ShipmentCard';
+import CreateShipmentForm from '../../components/CreateShipmentForm';
 
 import { useDispatch, useSelector } from '../../redux/store';
-import { createShipmentFunc } from '../../redux/slices/shipments/createshipment';
 import { updateShipmentLocationFunc } from '../../redux/slices/shipments/updatelocation';
 import { fetchShipmentFunc } from '../../redux/slices/shipments/featchshipments';
 
-
 const Dashboard = ({ currentUser }) => {
   const dispatch = useDispatch();
-  const { isLoading, error, success:createdshipment } = useSelector((state) => state.createshipment);
-  const { isLoading:fetchingshipment, error: shipmentserrors, shipments: allshipments } = useSelector((state) => state.featchshipments);
+  const { success: createdshipment } = useSelector((state) => state.createshipment);
+  const { shipments: allshipments } = useSelector((state) => state.featchshipments);
 
   React.useEffect(() => {
     dispatch(fetchShipmentFunc());
-  }, [dispatch,createdshipment]);
-  
+  }, [dispatch, createdshipment]);
 
-  const [newShipment, setNewShipment] = useState({
-    trackingNumber: '',
-    weight: '',
-    length: '',
-    width: '',
-    height: '',
-    contents: '',
-    initialLocation: '',
-  });
-
-  // const [shipments, setShipments] = useState(allshipments);
-
-  const [openModal, setOpenModal] = useState(false);
-
-  const handleModalOpen = () => {
-    setOpenModal(true);
+  const updateLocation = (shipmentId, newLocation) => {
+    dispatch(updateShipmentLocationFunc(shipmentId, newLocation));
   };
 
-  const handleModalClose = () => {
-    setOpenModal(false);
-  };
- 
-
-  const updateLocation = (shipmentId, newLocation,description) => {
-   dispatch(updateShipmentLocationFunc(shipmentId,newLocation))
-   
-  };
+  const shipmentCount = allshipments?.length || 0;
 
   return (
-    <Container>
+    <Container maxWidth="lg" sx={{ py: 3 }}>
       <Grid container spacing={3}>
-        {/* Form to Create Shipment */}
-       <Grid item xs={12} style={{ marginTop: '20px' }}>
-            <CreateShipmentForm />
-       </Grid>
+        {/* Create Shipment Form */}
+        <Grid item xs={12}>
+          <CreateShipmentForm />
+        </Grid>
 
-        {/* Display Shipments */}
-        <Grid item xs={12} style={{ marginTop: '20px' }}>
-          <Typography variant="h5" gutterBottom>
-            Shipments
-          </Typography>
-          {!!allshipments && allshipments.map((shipment) => (
+        {/* Shipment List */}
+        <Grid item xs={12} sx={{ mt: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              All Shipments
+            </Typography>
+            <Chip label={`${shipmentCount} total`} size="small" color="primary" variant="outlined" />
+          </Box>
+          {shipmentCount === 0 && (
+            <Typography color="text.secondary">No shipments yet. Create one above to get started.</Typography>
+          )}
+          {allshipments && allshipments.map((shipment) => (
             <ShipmentCard key={shipment.id} shipment={shipment} onUpdateLocation={updateLocation} />
           ))}
         </Grid>
