@@ -1,6 +1,3 @@
-// /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-// /* eslint-disable jsx-a11y/click-events-have-key-events */
-
 import * as React from 'react';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -17,6 +14,7 @@ import Link from '@mui/material/Link';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { Outlet } from 'react-router-dom';
 import { MainListItems } from './listItems';
 
@@ -44,8 +42,10 @@ const AppBar = styled(MuiAppBar, {
     duration: theme.transitions.duration.leavingScreen,
   }),
   ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
+    [theme.breakpoints.up('md')]: {
+      marginLeft: drawerWidth,
+      width: `calc(100% - ${drawerWidth}px)`,
+    },
     transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -53,7 +53,7 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+const DesktopDrawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
   '& .MuiDrawer-paper': {
     position: 'relative',
     whiteSpace: 'nowrap',
@@ -80,10 +80,37 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 const mdTheme = createTheme();
 
 function DashboardContent() {
-  const [open, setOpen] = React.useState(true);
+  const isMobile = useMediaQuery(mdTheme.breakpoints.down('md'));
+  const [open, setOpen] = React.useState(!isMobile);
+
+  React.useEffect(() => {
+    setOpen(!isMobile);
+  }, [isMobile]);
+
   const toggleDrawer = () => {
     setOpen(!open);
   };
+
+  const drawerContent = (
+    <>
+      <Toolbar
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          px: [1],
+        }}
+      >
+        <IconButton onClick={toggleDrawer}>
+          <ChevronLeftIcon />
+        </IconButton>
+      </Toolbar>
+      <Divider />
+      <List component="nav">
+        <MainListItems />
+      </List>
+    </>
+  );
 
   return (
     <ThemeProvider theme={mdTheme}>
@@ -92,7 +119,7 @@ function DashboardContent() {
         <AppBar position="absolute" open={open}>
           <Toolbar
             sx={{
-              pr: '24px', // keep right padding when drawer closed
+              pr: '24px',
             }}
           >
             <IconButton
@@ -102,7 +129,7 @@ function DashboardContent() {
               onClick={toggleDrawer}
               sx={{
                 marginRight: '36px',
-                ...(open && { display: 'none' }),
+                ...(!isMobile && open && { display: 'none' }),
               }}
             >
               <MenuIcon />
@@ -117,24 +144,29 @@ function DashboardContent() {
             </IconButton>
           </Toolbar>
         </AppBar>
-        <Drawer variant="permanent" open={open}>
-          <Toolbar
+
+        {/* Mobile: temporary drawer overlay */}
+        {isMobile ? (
+          <MuiDrawer
+            variant="temporary"
+            open={open}
+            onClose={toggleDrawer}
+            ModalProps={{ keepMounted: true }}
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              px: [1],
+              '& .MuiDrawer-paper': {
+                width: drawerWidth,
+                boxSizing: 'border-box',
+              },
             }}
           >
-            <IconButton onClick={toggleDrawer}>
-              <ChevronLeftIcon />
-            </IconButton>
-          </Toolbar>
-          <Divider />
-          <List component="nav">
-            <MainListItems />
-          </List>
-        </Drawer>
+            {drawerContent}
+          </MuiDrawer>
+        ) : (
+          <DesktopDrawer variant="permanent" open={open}>
+            {drawerContent}
+          </DesktopDrawer>
+        )}
+
         <Box
           component="main"
           sx={{

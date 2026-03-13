@@ -90,7 +90,7 @@ const initialFormState = {
 };
 
 const SectionTitle = ({ children }) => (
-  <Typography variant="h6" sx={{ mt: 3, mb: 1, fontWeight: 600, color: 'primary.main' }}>
+  <Typography variant="h6" sx={{ mt: { xs: 2, sm: 3 }, mb: 1, fontWeight: 600, color: 'primary.main', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
     {children}
   </Typography>
 );
@@ -189,11 +189,11 @@ const ShipmentForm = () => {
   };
 
   return (
-    <Paper elevation={2} sx={{ p: 3 }}>
+    <Paper elevation={2} sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
       <form onSubmit={createShipment}>
         {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
 
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 700 }}>
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
           Create New Shipment
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -434,7 +434,7 @@ const ShipmentForm = () => {
             variant="contained"
             color="primary"
             size="large"
-            sx={{ mt: 1, px: 5 }}
+            sx={{ mt: 1, px: { xs: 3, sm: 5 }, width: { xs: '100%', sm: 'auto' } }}
           >
             Create Shipment
           </LoadingButton>

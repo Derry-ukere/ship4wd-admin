@@ -10,6 +10,8 @@ import transactionStatus from './slices/users/transaction-status';
 import createshipment from './slices/shipments/createshipment';
 import updatelocation from './slices/shipments/updatelocation';
 import featchshipments from './slices/shipments/featchshipments';
+import deleteshipment from './slices/shipments/deleteshipment';
+import editshipment from './slices/shipments/editshipment';
 
 
 
@@ -32,7 +34,9 @@ const rootReducer = combineReducers({
   changeStatus : transactionStatus,
   createshipment,
   updatelocation,
-  featchshipments
+  featchshipments,
+  deleteshipment,
+  editshipment
 });
 
 export { rootPersistConfig, rootReducer };

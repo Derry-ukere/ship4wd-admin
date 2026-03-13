@@ -8,6 +8,10 @@ import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -32,6 +36,7 @@ const theme = createTheme();
 export default function SignInSide() {
   const [error, setError] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (event) => {
@@ -102,9 +107,18 @@ export default function SignInSide() {
                 fullWidth
                 name="password"
                 label="Password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="password"
                 autoComplete="current-password"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
               />
               <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
               <LoadingButton type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} loading={loading}>
